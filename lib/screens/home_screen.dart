@@ -19,11 +19,29 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(title: const Text("Lista zakupów")),
       body: BlocBuilder<ShoppingBloc, ShoppingState>(
         builder: (context, state) {
-          return ListView(
-            children: state.items
-              .map((item) => ShoppingItemTile(item: item))
-              .toList(),
-          );
+          final notBought = state.items.where((item) => !item.isBought).toList();
+          final bought = state.items.where((item) => item.isBought).toList();
+
+          final widgets = <Widget>[];
+          widgets.add(const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              "Do kupienia",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ));
+          widgets.addAll(notBought.map((item) => ShoppingItemTile(item: item)));
+          
+          widgets.add(const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Text(
+            "Kupione",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ));
+        widgets.addAll(bought.map((item) => ShoppingItemTile(item: item)));
+
+          return ListView(children: widgets);
         },
       ),
       floatingActionButton: FloatingActionButton (
@@ -46,11 +64,13 @@ class HomeScreen extends StatelessWidget {
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(hintText: "np. Mleko"),
+              decoration: const InputDecoration(labelText: "Nazwa", hintText: "np. Mleko"),
             ),
+            const SizedBox(height: 10),
             TextField(
               controller: quantityController,
-              decoration: const InputDecoration(hintText: "Ilość: np. 3"),
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: "Ilość", hintText: "Ilość: np. 3"),
             ),
           ],
         ),

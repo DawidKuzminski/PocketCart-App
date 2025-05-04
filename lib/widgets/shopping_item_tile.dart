@@ -22,10 +22,68 @@ class ShoppingItemTile extends StatelessWidget {
         value: item.isBought,
         onChanged: (_) => context.read<ShoppingBloc>().add(ToggleItem(item.id))
       ),
-      trailing: IconButton(
-        icon: const Icon(Icons.delete),
-        onPressed: () => context.read<ShoppingBloc>().add(RemoveItem(item.id))
-        ),        
-      );
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () => _showEditItemDialog(context),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () => context.read<ShoppingBloc>().add(RemoveItem(item.id))
+          ),
+        ],
+      ) 
+    );
+  }
+
+  void _showEditItemDialog(BuildContext context) {
+    final nameController = TextEditingController(text: item.name);
+    final quantityController = TextEditingController(text: item.quantity.toString());
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Edytuj produkt"),
+        content: SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 200),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: "Nazwa"),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: quantityController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: "Ilość"),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              final name = nameController.text.trim();
+              final quantity = int.tryParse(quantityController.text.trim()) ?? 1;
+              if (name.isNotEmpty) {
+                context.read<ShoppingBloc>().add(EditItem(
+                  item.id,
+                  name,
+                  quantity,
+                ));
+              }
+              Navigator.pop(context);
+            },
+            child: const Text("Zapisz"),
+          )
+        ],
+      ),
+    );
   }
 }

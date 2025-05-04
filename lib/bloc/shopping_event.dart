@@ -18,3 +18,10 @@ class RemoveItem extends ShoppingEvent {
   final String id;
   RemoveItem(this.id);
 }
+
+class EditItem extends ShoppingEvent {
+  final String id;
+  final String newName;
+  final int newQuantity;
+  EditItem(this.id, this.newName, this.newQuantity);
+}
