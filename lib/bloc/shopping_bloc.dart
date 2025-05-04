@@ -25,7 +25,8 @@ class ShoppingBloc extends Bloc<ShoppingEvent, ShoppingState> {
           return ShoppingItem(
             id: item.id, 
             name: item.name,
-            isBought: !item.isBought);
+            isBought: !item.isBought,
+            category: item.category);
         }
 
         return item;
@@ -45,7 +46,7 @@ class ShoppingBloc extends Bloc<ShoppingEvent, ShoppingState> {
     on<EditItem>((event, emit) async {
       final updated = state.items.map((item) {
         if(item.id == event.id) {
-          return ShoppingItem(id: item.id, name: event.newName, quantity: event.newQuantity);
+          return ShoppingItem(id: item.id, name: event.newName, quantity: event.newQuantity, category: event.newCategory);
         }
 
         return item;

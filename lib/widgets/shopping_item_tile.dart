@@ -41,6 +41,8 @@ class ShoppingItemTile extends StatelessWidget {
   void _showEditItemDialog(BuildContext context) {
     final nameController = TextEditingController(text: item.name);
     final quantityController = TextEditingController(text: item.quantity.toString());
+    final categoryController = ValueNotifier<String>(item.category);
+    final List<String> categories = ['Nabiał', 'Warzywa', 'Mięso', 'Pieczywo', 'Inne'];
 
     showDialog(
       context: context,
@@ -62,6 +64,18 @@ class ShoppingItemTile extends StatelessWidget {
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(labelText: "Ilość"),
                 ),
+                DropdownButtonFormField(
+                  value: categoryController.value,
+                  items: categories
+                    .map((category) => DropdownMenuItem(value: category, child: Text(category)))
+                    .toList(),
+                  onChanged: (value) {
+                    if(value != null)
+                      categoryController.value = value;
+                  },
+
+                  decoration: const InputDecoration(labelText: "Kategoria"),
+                ),
               ],
             ),
           ),
@@ -71,11 +85,14 @@ class ShoppingItemTile extends StatelessWidget {
             onPressed: () {
               final name = nameController.text.trim();
               final quantity = int.tryParse(quantityController.text.trim()) ?? 1;
+              final category = categoryController.value;
+
               if (name.isNotEmpty) {
                 context.read<ShoppingBloc>().add(EditItem(
                   item.id,
                   name,
                   quantity,
+                  category,
                 ));
               }
               Navigator.pop(context);

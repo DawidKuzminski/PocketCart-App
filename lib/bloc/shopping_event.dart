@@ -23,5 +23,6 @@ class EditItem extends ShoppingEvent {
   final String id;
   final String newName;
   final int newQuantity;
-  EditItem(this.id, this.newName, this.newQuantity);
+  final String newCategory;
+  EditItem(this.id, this.newName, this.newQuantity, this.newCategory);
 }
