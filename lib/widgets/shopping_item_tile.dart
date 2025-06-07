@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shopping_list_app/bloc/shopping_bloc.dart';
-import 'package:shopping_list_app/bloc/shopping_event.dart';
+import 'package:shopping_list_app/bloc/shoppingList/shopping_list_bloc.dart';
+import 'package:shopping_list_app/bloc/shoppingList/shopping_list_event.dart';
+
 import 'package:shopping_list_app/models/shopping_item.dart';
 
 class ShoppingItemTile extends StatelessWidget {
   final ShoppingItem item;
+  final String listId;
 
-  const ShoppingItemTile({super.key, required this.item});
+  const ShoppingItemTile({super.key, required this.item, required this.listId});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +22,7 @@ class ShoppingItemTile extends StatelessWidget {
       ),
       leading: Checkbox(
         value: item.isBought,
-        onChanged: (_) => context.read<ShoppingBloc>().add(ToggleItem(item.id))
+        onChanged: (_) => context.read<ShoppingListBloc>().add(ToggleItemInList(listId, item.id))
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -31,7 +33,7 @@ class ShoppingItemTile extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.delete),
-            onPressed: () => context.read<ShoppingBloc>().add(RemoveItem(item.id))
+            onPressed: () => context.read<ShoppingListBloc>().add(RemoveItemFromList(listId, item.id))
           ),
         ],
       ) 
@@ -70,8 +72,9 @@ class ShoppingItemTile extends StatelessWidget {
                     .map((category) => DropdownMenuItem(value: category, child: Text(category)))
                     .toList(),
                   onChanged: (value) {
-                    if(value != null)
+                    if(value != null) {
                       categoryController.value = value;
+                    }
                   },
 
                   decoration: const InputDecoration(labelText: "Kategoria"),
@@ -86,14 +89,14 @@ class ShoppingItemTile extends StatelessWidget {
               final name = nameController.text.trim();
               final quantity = int.tryParse(quantityController.text.trim()) ?? 1;
               final category = categoryController.value;
-
               if (name.isNotEmpty) {
-                context.read<ShoppingBloc>().add(EditItem(
-                  item.id,
-                  name,
-                  quantity,
-                  category,
-                ));
+                  context.read<ShoppingListBloc>().add(UpdateItemInList(listId, ShoppingItem(                  
+                  id: item.id,
+                  name: name,
+                  quantity: quantity,
+                  category: category,
+                  isBought: item.isBought
+                )));
               }
               Navigator.pop(context);
             },
