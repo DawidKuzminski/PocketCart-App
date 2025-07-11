@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shopping_list_app/bloc/shoppingList/shopping_list_bloc.dart';
 import 'package:shopping_list_app/bloc/shoppingList/shopping_list_event.dart';
 import 'package:shopping_list_app/bloc/shoppingList/shopping_list_state.dart';
+import 'package:shopping_list_app/models/routes.dart';
 import 'package:shopping_list_app/models/shopping_list.dart';
 import 'package:shopping_list_app/screens/shopping_list_detail_screen.dart';
 import 'package:uuid/uuid.dart';
@@ -30,9 +32,10 @@ class ShoppingListScreen extends StatelessWidget
 
                   return ListTile(
                     title: Text(list.name),
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => ShoppingListDetailScreen(name: list.name, listId: list.id)));
-                    },
+                    onTap: () => context.push(
+                      Routes.homeDetails,
+                      extra: {'name': list.name, 'listId': list.id}
+                    ),
                     trailing: PopupMenuButton<String>(
                       onSelected: (value) {
                         if(value == 'edit') {
@@ -81,10 +84,19 @@ class ShoppingListScreen extends StatelessWidget
           TextButton(
             onPressed: () {
               final name = nameController.text.trim();
-              if(name.isNotEmpty) {
+              if (name.isNotEmpty) {
                 final list = ShoppingList(id: uuid.v4(), name: name);
-                context.read<ShoppingListBloc>().add(AddList(list));
-                Navigator.push(context, MaterialPageRoute(builder: (_) => ShoppingListDetailScreen(name: list.name, listId: list.id)));
+
+                final bloc = context.read<ShoppingListBloc>();
+                Navigator.of(context, rootNavigator: true).pop();
+
+                Future.microtask(() {
+                  bloc.add(AddList(list));
+                  context.push(
+                    Routes.homeDetails,
+                    extra: {'name': list.name, 'listId': list.id},
+                  );
+                });
               }
             },
             child: const Text("Dodaj")
@@ -116,7 +128,7 @@ class ShoppingListScreen extends StatelessWidget
               final name = nameController.text.trim();
               if(name.isNotEmpty) {
                 context.read<ShoppingListBloc>().add(UpdateList(selectedList.id, name));
-                Navigator.pop(context);
+                Navigator.of(context, rootNavigator: true).pop();
               }
             },
             child: const Text("Zapisz")

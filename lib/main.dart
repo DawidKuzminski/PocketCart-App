@@ -5,6 +5,7 @@ import 'package:shopping_list_app/bloc/shoppingList/shopping_list_bloc.dart';
 import 'package:shopping_list_app/bloc/shoppingList/shopping_list_event.dart';
 import 'package:shopping_list_app/models/shopping_item.dart';
 import 'package:shopping_list_app/models/shopping_list.dart';
+import 'package:shopping_list_app/router/router.dart';
 import 'package:shopping_list_app/services/shopping_list_repository.dart';
 
 import 'screens/shopping_list_screen.dart';
@@ -35,8 +36,8 @@ class MyApp extends StatelessWidget {
             create: (_) => ShoppingListBloc(shoppingListService)..add(LoadLists()),
           ),
         ],
-        child: const MaterialApp(
-        home: ShoppingListScreen(),
+        child: MaterialApp.router(
+        routerConfig: router,
         ),
       );
     }

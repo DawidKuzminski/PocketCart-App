@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shopping_list_app/bloc/shoppingList/shopping_list_bloc.dart';
 import 'package:shopping_list_app/bloc/shoppingList/shopping_list_event.dart';
 import 'package:shopping_list_app/bloc/shoppingList/shopping_list_state.dart';
+import 'package:shopping_list_app/models/routes.dart';
 import 'package:shopping_list_app/models/shopping_item.dart';
 import 'package:shopping_list_app/models/shopping_list.dart';
 import 'package:shopping_list_app/screens/shopping_list_screen.dart';
@@ -29,7 +31,9 @@ class ShoppingListDetailScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const ShoppingListScreen()));
+            context.push(
+              Routes.homePage,
+            );
           },
         ),
       ),
@@ -154,7 +158,7 @@ class ShoppingListDetailScreen extends StatelessWidget {
                 context.read<ShoppingListBloc>().add(AddItemToList(listId, item));
               }
               
-              Navigator.pop(context);
+              Navigator.of(context, rootNavigator: true).pop();
             }, 
             child: const Text("Dodaj")
           )

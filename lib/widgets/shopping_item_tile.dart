@@ -98,7 +98,7 @@ class ShoppingItemTile extends StatelessWidget {
                   isBought: item.isBought
                 )));
               }
-              Navigator.pop(context);
+              Navigator.of(context, rootNavigator: true).pop();
             },
             child: const Text("Zapisz"),
           )
