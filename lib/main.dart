@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:shopping_list_app/bloc/shoppingList/shopping_list_bloc.dart';
 import 'package:shopping_list_app/bloc/shoppingList/shopping_list_event.dart';
+import 'package:shopping_list_app/models/category.dart';
 import 'package:shopping_list_app/models/shopping_item.dart';
 import 'package:shopping_list_app/models/shopping_list.dart';
 import 'package:shopping_list_app/router/router.dart';
@@ -16,7 +17,10 @@ void main() async {
 
   Hive.registerAdapter(ShoppingItemAdapter()); 
   Hive.registerAdapter(ShoppingListAdapter());
+  Hive.registerAdapter(CategoryAdapter());
+
   await Hive.openBox<ShoppingList>('shopping_lists');
+  await Hive.openBox<Category>('shopping_categories');
 
   final shoppingListService = ShoppingListService();
   
