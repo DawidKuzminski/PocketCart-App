@@ -22,7 +22,7 @@ class CategoriesScreen extends StatelessWidget {
         builder: (context, state) {
           final categories = state.categories;
           if(categories.isEmpty) {
-            return const Center(child: Text('Nie dodano jeszcze żadanych kategorii'));
+            context.read<CategoriesBloc>().add(Add(model.Category(id: uuid.v4(), name: 'Inne')));
           }
 
           return ListView.builder(

@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shopping_list_app/bloc/category/category_bloc.dart';
 import 'package:shopping_list_app/bloc/shoppingList/shopping_list_bloc.dart';
 import 'package:shopping_list_app/bloc/shoppingList/shopping_list_event.dart';
 import 'package:shopping_list_app/bloc/shoppingList/shopping_list_state.dart';
 import 'package:shopping_list_app/models/routes.dart';
 import 'package:shopping_list_app/models/shopping_item.dart';
 import 'package:shopping_list_app/models/shopping_list.dart';
-import 'package:shopping_list_app/screens/shopping_list_screen.dart';
 import 'package:shopping_list_app/widgets/shopping_item_tile.dart';
 import 'package:uuid/uuid.dart';
 
 class ShoppingListDetailScreen extends StatelessWidget {
   final String name;
   final String listId;
+  String _lastUsedCategory = "";
 
-  const ShoppingListDetailScreen({
+  ShoppingListDetailScreen({
     super.key,
     required this.name,
     required this.listId
@@ -109,10 +110,24 @@ class ShoppingListDetailScreen extends StatelessWidget {
   }
 
   void _showAddItemDialog(BuildContext context) {
+    final categories = context.read<CategoriesBloc>().state.categories;
+    
+    final categoriesAsString = categories
+      .map((category) => DropdownMenuItem(
+        value: category.name, 
+        child: Text(category.name)
+      ))
+      .toList();
+
+    final initialCategory = _lastUsedCategory.isNotEmpty
+      ? _lastUsedCategory
+      : categories.isNotEmpty
+        ? categories.first.name
+        : 'Inne';
+
+    final categoryController = ValueNotifier(initialCategory);
     final nameController = TextEditingController();
-    final quantityController = TextEditingController(text: '1');
-    final categoryController = ValueNotifier<String>('Inne');
-    final List<String> categories = ['Nabiał', 'Warzywa', 'Mięso', 'Pieczywo', 'Inne'];
+    final quantityController = TextEditingController(text: '1');    
 
     showDialog(
       context: context,
@@ -133,11 +148,9 @@ class ShoppingListDetailScreen extends StatelessWidget {
             ),
             DropdownButtonFormField(
               value: categoryController.value,
-              items: categories
-                .map((category) => DropdownMenuItem(value: category, child: Text(category)))
-                .toList(),
+              items: categoriesAsString,
               onChanged: (value) {
-                if(value != null) {
+                if(value != null && value is String) {
                   categoryController.value = value;
                 }
               },
@@ -157,7 +170,7 @@ class ShoppingListDetailScreen extends StatelessWidget {
                 final item = ShoppingItem(id: uuid.v4(), name: name, quantity: quantity, category: category);
                 context.read<ShoppingListBloc>().add(AddItemToList(listId, item));
               }
-              
+              _lastUsedCategory = categoryController.value;
               Navigator.of(context, rootNavigator: true).pop();
             }, 
             child: const Text("Dodaj")
