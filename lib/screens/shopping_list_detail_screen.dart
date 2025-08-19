@@ -119,13 +119,7 @@ class ShoppingListDetailScreen extends StatelessWidget {
       ))
       .toList();
 
-    final initialCategory = _lastUsedCategory.isNotEmpty
-      ? _lastUsedCategory
-      : categories.isNotEmpty
-        ? categories.first.name
-        : 'Inne';
-
-    final categoryController = ValueNotifier(initialCategory);
+    final categoryController = ValueNotifier(categories.first.name);
     final nameController = TextEditingController();
     final quantityController = TextEditingController(text: '1');    
 
