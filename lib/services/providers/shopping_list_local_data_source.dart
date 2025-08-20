@@ -1,27 +1,19 @@
 import 'package:hive/hive.dart';
 import 'package:shopping_list_app/models/shopping_item.dart';
 import 'package:shopping_list_app/models/shopping_list.dart';
-import 'package:shopping_list_app/services/providers/shopping_list_remote_data_source.dart';
+import 'package:shopping_list_app/services/shopping_list_repository.dart';
 
-class ShoppingListService {
-  static final ShoppingListService _instance = ShoppingListService._internal();
-  factory ShoppingListService() => _instance;
-  ShoppingListService._internal();
+class ShoppingListLocalDataSource {
+  static final ShoppingListLocalDataSource _instance = ShoppingListLocalDataSource._internal();
+  factory ShoppingListLocalDataSource() => _instance;
+  ShoppingListLocalDataSource._internal();
 
   final Box<ShoppingList> _box = Hive.box<ShoppingList>('shopping_lists');
 
   List<ShoppingList> getAllList() => _box.values.toList();
 
-
-  final ShoppingListRemoteDataSource remote = new ShoppingListRemoteDataSource();
   Future<void> addList(ShoppingList list) async {
     await _box.add(list);
-
-    try {
-      await remote.fetchAll();
-    } catch(e) {
-      print(e);
-    }
   }
 
   Future<void> deleteListById(String id) async {
