@@ -1,54 +1,67 @@
-import 'package:hive/hive.dart';
+import 'package:shopping_list_app/data/cart_local_data_source.dart';
+import 'package:shopping_list_app/data/cart_remote_data_source.dart';
+import 'package:shopping_list_app/models/dtos/shopping_list_dto.dart';
 import 'package:shopping_list_app/models/shopping_item.dart';
 import 'package:shopping_list_app/models/shopping_list.dart';
-import 'package:shopping_list_app/services/shopping_list_repository.dart';
 
-class ShoppingListLocalDataSource {
-  static final ShoppingListLocalDataSource _instance = ShoppingListLocalDataSource._internal();
-  factory ShoppingListLocalDataSource() => _instance;
-  ShoppingListLocalDataSource._internal();
+class CartRepository {
+  final CartLocalDataSource local;
+  final CartRemoteDataSource remote;
 
-  final Box<ShoppingList> _box = Hive.box<ShoppingList>('shopping_lists');
+  CartRepository({required this.local, required this.remote});  
 
-  List<ShoppingList> getAllList() => _box.values.toList();
-
-  Future<void> addList(ShoppingList list) async {
-    await _box.add(list);
-  }
-
-  Future<void> deleteListById(String id) async {
-    final index = _box.values.toList().indexWhere((i) => i.id == id);
-    if(index != -1) {
-        await _box.deleteAt(index);
-    }        
-  }
-
-  Future<void> updateListById(String id, ShoppingList updateList) async {
-    final index = _box.values.toList().indexWhere((i) => i.id == id);
-    if(index != -1) {
-        await _box.putAt(index, updateList);
+  Future<List<ShoppingList>> getCarts({bool forceRemote = false}) async {
+    if (forceRemote) {
+      try {
+        final remoteLists = await remote.getCarts();
+        await local.clearAll();
+        for (var dto in remoteLists) {
+          await local.addList(dto.toShoppingList());
+        }
+      } catch (e) {
+        // Handle error, e.g., log it or rethrow
+      }
     }
+
+    return local.getAllList();
   }
 
-  ShoppingList? getReadonlyListById(String id) {
-    try {
-        return _box.values.firstWhere((l) => l.id == id);
-    } catch (e) {
-        return null;
+
+  Future<void> addCart(ShoppingList cart) async {
+    await local.addList(cart);
+    await remote.addCart(ShoppingListDto.fromShoppingList(cart));
+  }
+
+  Future<void> deleteCartById(String id) async {
+    await local.deleteListById(id);
+    await remote.deleteCartAsync(id);
+  }
+
+  Future<void> updateListById(String id, ShoppingList updatedCart) async {
+    await local.updateListById(id, updatedCart);
+    await remote.updateCartAsync(id, ShoppingListDto.fromShoppingList(updatedCart));
+  }
+
+  Future<List<ShoppingItem>> getItems(String cartId, {bool forceRemote = false}) async {
+    if(forceRemote) {
+      try {
+        final remoteItems = await remote.getCartItemsAsync(cartId);
+        final list = local.getEditableListById(cartId);
+        if (list != null) {
+          final updatedList = ShoppingList(
+            id: list.id,
+            name: list.name,
+            items: remoteItems.map((dto) => dto.toShoppingItem()).toList(),
+          );
+          
+          await local.updateListById(cartId, updatedList);
+        }
+      } catch (e) {
+        // Handle error, e.g., log it or rethrow
+      }
     }
-  }
 
-  ShoppingList? getEditableListById(String id) {
-    final index = _box.values.toList().indexWhere((l) => l.id == id);
-    return index != -1 ? _box.getAt(index) : null;
-  }
-
-   List<ShoppingItem> getItems(String listId) {
-    final list = getReadonlyListById(listId);
-    if(list != null) {
-      return list.items;
-    }
-      return [];
+    return local.getItems(cartId);    
    }
 
   Future<void> addItemToList(String listId, ShoppingItem item) async {

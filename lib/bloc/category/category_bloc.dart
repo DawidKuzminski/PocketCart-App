@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shopping_list_app/bloc/category/category_event.dart';
 import 'package:shopping_list_app/bloc/category/category_state.dart';
-import 'package:shopping_list_app/services/category_repository.dart';
+import 'package:shopping_list_app/data/category_repository.dart';
 
 class CategoriesBloc extends Bloc<CategoriesEvent, CategoryState> {
   final CategoryRepository storage;

@@ -2,10 +2,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shopping_list_app/bloc/shoppingList/shopping_list_event.dart';
 import 'package:shopping_list_app/bloc/shoppingList/shopping_list_state.dart';
 import 'package:shopping_list_app/models/shopping_list.dart';
-import 'package:shopping_list_app/services/shopping_list_repository.dart';
+import 'package:shopping_list_app/data/cart_local_data_source.dart';
 
 class ShoppingListBloc extends Bloc<ShoppingEvent, ShoppingListState> {
-  final ShoppingListService storage;
+  final CartLocalDataSource storage;
 
   ShoppingListBloc(this.storage) : super (ShoppingListState(lists: [])) {
     on<LoadLists>((event, emit) {
