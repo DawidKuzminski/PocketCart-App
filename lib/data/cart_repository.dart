@@ -1,5 +1,6 @@
 import 'package:shopping_list_app/data/cart_local_data_source.dart';
 import 'package:shopping_list_app/data/cart_remote_data_source.dart';
+import 'package:shopping_list_app/models/dtos/shopping_item_dto.dart';
 import 'package:shopping_list_app/models/dtos/shopping_list_dto.dart';
 import 'package:shopping_list_app/models/shopping_item.dart';
 import 'package:shopping_list_app/models/shopping_list.dart';
@@ -26,6 +27,11 @@ class CartRepository {
     return local.getAllList();
   }
 
+  ShoppingList? getEditableListById(String id) {
+    final index = local.findIndexById(id);
+    if (index == -1) return null;
+    return local.getAllList()[index];
+  }
 
   Future<void> addCart(ShoppingList cart) async {
     await local.addList(cart);
@@ -76,6 +82,12 @@ class CartRepository {
     );
 
     await updateListById(listId, updatedList);
+
+    try {
+      await remote.addItemToCart(listId, ShoppingItemDto.fromShoppingItem(item));
+    } catch (e) {
+      // Handle error, e.g., log it or rethrow
+    }
   }
 
   Future<void> updateItem(String listId, ShoppingItem updatedItem) async {
@@ -88,6 +100,12 @@ class CartRepository {
     list.items[index] = updatedItem;
 
     await updateListById(listId, list);
+
+    try {
+      await remote.updateItemInCart(listId, updatedItem.id, ShoppingItemDto.fromShoppingItem(updatedItem));
+    } catch (e) {
+      // Handle error, e.g., log it or rethrow
+    }
   }
 
   Future<void> toggleItem(String listId, String itemId) async {
@@ -108,31 +126,31 @@ class CartRepository {
       list.items[index] = toggledItem;
 
     await updateListById(listId, list);
+
+    try {
+      await remote.updateItemInCart(listId, itemId, ShoppingItemDto.fromShoppingItem(toggledItem));
+    } catch (e) {
+      // Handle error, e.g., log it or rethrow
+    }
   }
 
   Future<void> deleteItem(String listId, String itemId) async {
-    final index = _box.values.toList().indexWhere((l) => l.id == listId);
-    if (index == -1) return; 
-
-    final list = _box.getAt(index);
+    final list = getEditableListById(listId);
     if (list == null) return;
 
-    final updatedItems = list.items.where((item) => item.id != itemId).toList();
+    final updatedItems = list.items.where((i) => i.id != itemId).toList();
     final updatedList = ShoppingList(
       id: list.id,
       name: list.name,
       items: updatedItems,
     );
 
-    await _box.putAt(index, updatedList);
-  }
+    await updateListById(listId, updatedList);
 
-  Future<void> clearAll() async {
-    _box.clear();
-  }
-
-  int findIndexById(String id) {
-    final items = _box.values.toList();
-    return items.indexWhere((item) => item.id == id);
+    try {
+      await remote.deleteItemFromCart(listId, itemId);
+    } catch (e) {
+      // Handle error, e.g., log it or rethrow
+    }
   }
 }

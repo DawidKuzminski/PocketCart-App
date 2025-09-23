@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shopping_list_app/models/dtos/shopping_item_dto.dart';
 import 'package:shopping_list_app/models/dtos/shopping_list_dto.dart';
-import 'package:shopping_list_app/models/shopping_list.dart';
 
 class CartRemoteDataSource {
   final http.Client client;
@@ -86,6 +85,62 @@ class CartRemoteDataSource {
       }
     } catch (e) {
       throw Exception('Error updating shopping list: $e');
+    }
+  }
+
+  Future<void> addItemToCart(String cartId, ShoppingItemDto item) async {
+    var url = Uri.http(baseUrl, 'carts/$cartId/items');
+    try {
+      var response = await client.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(item.toJson()),
+      );
+      if (response.statusCode != 201) {
+        throw Exception('Failed to add item to shopping list');
+      }
+    } catch (e) {
+      throw Exception('Error adding item to shopping list: $e');
+    }
+  }
+
+  Future<void> updateItemInCart(String cartId, String itemId, ShoppingItemDto updatedItem) async {
+    var url = Uri.http(baseUrl, 'carts/$cartId/items/$itemId');
+    try {
+      var response = await client.put(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(updatedItem.toJson()),
+      );
+      if (response.statusCode != 200) {
+        throw Exception('Failed to update item in shopping list');
+      }
+    } catch (e) {
+      throw Exception('Error updating item in shopping list: $e');
+    }
+  }
+
+  Future<void> deleteItemFromCart(String cartId, String itemId) async {
+    var url = Uri.http(baseUrl, 'carts/$cartId/items/$itemId');
+    try {
+      var response = await client.delete(url);
+      if (response.statusCode != 200) {
+        throw Exception('Failed to delete item from shopping list');
+      }
+    } catch (e) {
+      throw Exception('Error deleting item from shopping list: $e');
+    }
+  }
+
+  Future<void> toggleItemInCart(String cartId, String itemId) async {
+    var url = Uri.http(baseUrl, 'carts/$cartId/items/$itemId/toggle');
+    try {
+      var response = await client.post(url);
+      if (response.statusCode != 200) {
+        throw Exception('Failed to toggle item in shopping list');
+      }
+    } catch (e) {
+      throw Exception('Error toggling item in shopping list: $e');
     }
   }
 }
